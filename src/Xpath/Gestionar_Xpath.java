@@ -6,6 +6,7 @@
 package Xpath;
 
 import java.io.File;
+import javax.swing.JFileChooser;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -14,15 +15,17 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
 /**
  *
  * @author Ruben
  */
 public class Gestionar_Xpath {
+//Objeto Document que almacena el DOM del XML seleccionado.
 
-    //Objeto Document que almacena el DOM del XML seleccionado
     Document doc;
+
     XPath xpath;
 
     public int abrir_XML(File fichero) {
@@ -52,21 +55,66 @@ public class Gestionar_Xpath {
     public String Ejecutar_XPath(String consulta) {
 
         String salida = "";
+        Node node;
+        String datos_nodo[] = null;
+
         try {
+
             XPathExpression exp = xpath.compile(consulta);
 
-            Object result = exp.evaluate(doc, XPathConstants.NODESET);
-            NodeList listaNodos = (NodeList) result;
-            
+            Object resultado = exp.evaluate(doc, XPathConstants.NODESET);
+            NodeList listaNodos = (NodeList) resultado;
 
-            for (int i = 0; i < listaNodos.getLength(); i++) {
-                salida = salida + "\n" + listaNodos.item(i).getFirstChild().getNodeValue();
+            Node nodoRecibido = (Node) exp.evaluate(doc, XPathConstants.NODE);
+
+            if (nodoRecibido.getNodeName() == "Libro") {
+                for (int i = 0; i < listaNodos.getLength(); i++) {
+                    node = listaNodos.item(i);
+                    if (node.getNodeType() == Node.ELEMENT_NODE) {
+                        datos_nodo = procesarLibro(node);
+                        salida += "\r\n " + "Publicado en: " + datos_nodo[0];
+                        salida += "\r\n " + "El título es: " + datos_nodo[1];
+                        salida += "\r\n " + "El autor es: " + datos_nodo[2];
+                        salida += "\r\n " + "La editorial es: " + datos_nodo[3];
+                        salida += "\r\n -------------------------";
+                    }
+                }
+            } else if (nodoRecibido.getNodeName() == "Autor" || nodoRecibido.getNodeName() == "Titulo" || nodoRecibido.getNodeName() == "Editorial") {
+                for (int j = 0; j < listaNodos.getLength(); j++) {
+                    salida += "\n" + listaNodos.item(j).getFirstChild().getNodeValue();
+                }
+            } else {
+                for (int n = 0; n < listaNodos.getLength(); n++) {
+                    salida += "\n" + listaNodos.item(n).getNodeValue();
+                }
             }
-            System.out.println(salida);
             return salida;
         } catch (Exception e) {
-            return "Error en la ejecución de la consulta";
+            return "Error en la ejecución de la salida";
         }
     }
 
+    private String[] procesarLibro(Node _n) {
+        String libros[] = new String[4];
+        Node hijosLibro = null;
+        int contador = 1;
+
+        //Obtiene el valor del primer atributo del nodo
+        libros[0] = _n.getAttributes().item(0).getNodeValue();
+
+        NodeList nodos = _n.getChildNodes();
+
+        for (int i = 0; i < nodos.getLength(); i++) {
+            hijosLibro = nodos.item(i);
+
+            if (hijosLibro.getNodeType() == Node.ELEMENT_NODE) {
+                //Para acceder al texto con el título y autor 
+                //accedo al nodo text hijo de ntemp y se saca su valor.
+                libros[contador] = hijosLibro.getFirstChild().getNodeValue();
+                contador++;
+            }
+        }
+
+        return libros;
+    }
 }

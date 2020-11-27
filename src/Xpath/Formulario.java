@@ -7,13 +7,15 @@ package Xpath;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
  * @author Ruben
  */
 public class Formulario extends javax.swing.JFrame {
-    
+
     Gestionar_Xpath gesXpath = new Gestionar_Xpath();
 
     /**
@@ -112,6 +114,8 @@ public class Formulario extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAbrirXmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirXmlActionPerformed
+        File ficheroXML = null;
+        ficheroXML = dialogoSeleccionarFichero();
         if (gesXpath.abrir_XML(dialogoSeleccionarFichero()) == -1) {
             this.jLabelMensaje.setText("Error al crear el objeto DOM");
             this.btnEjecutar.setEnabled(false);
@@ -122,9 +126,7 @@ public class Formulario extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAbrirXmlActionPerformed
 
     private void btnEjecutarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEjecutarActionPerformed
-        String salida;
-        salida = gesXpath.Ejecutar_XPath(this.TxtConsulta.getText());
-        this.TxtSalida.setText(salida);
+        this.TxtSalida.setText(gesXpath.Ejecutar_XPath(this.TxtConsulta.getText()));
     }//GEN-LAST:event_btnEjecutarActionPerformed
 
     /**
@@ -161,19 +163,8 @@ public class Formulario extends javax.swing.JFrame {
             }
         });
     }
-    
-    private File dialogoSeleccionarFichero() {
-        File fichero = null;
-        
-        JFileChooser fc = new JFileChooser();
-        fc.setMultiSelectionEnabled(false);
-        fc.setDialogType(JFileChooser.OPEN_DIALOG);
-        int rv = fc.showOpenDialog(this);
-        if (rv == JFileChooser.APPROVE_OPTION) {
-            fichero = fc.getSelectedFile();
-        }
-        return fichero;
-    }
+
+  
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea TxtConsulta;
@@ -185,4 +176,74 @@ public class Formulario extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
+
+    private File dialogoSeleccionarFichero() {
+
+        File fichero = null;
+
+        try {
+            JFileChooser fco = new JFileChooser();
+
+            //Busca evitar abrir ficheros binarios
+            fco.setFileFilter(new FileNameExtensionFilter("Archivos xml", "xml"));
+
+            fco.setMultiSelectionEnabled(false);
+            fco.setDialogType(JFileChooser.OPEN_DIALOG);
+
+            //Si no se produce ningún error seleccion será 0
+            int seleccion = fco.showOpenDialog(this);
+            if (seleccion == JFileChooser.APPROVE_OPTION) {
+                fichero = fco.getSelectedFile();
+                String nombre = fichero.getName();
+                String extension = nombre.substring(nombre.lastIndexOf('.') + 1, nombre.length());
+
+                if (!extension.equalsIgnoreCase("xml")) {
+
+                    JOptionPane.showConfirmDialog(null, "Estensión seleccionada no válida.", "", JOptionPane.PLAIN_MESSAGE);
+
+                } else {
+                    return fichero;
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Fichero no seleccionado.");
+        }
+
+        return null;
+    }
+      private File dialogoGuardarFichero() {
+
+        File fichero = null;
+
+        try {
+            JFileChooser fcs = new JFileChooser();
+
+            //Busca evitar abrir ficheros binarios
+            fcs.setFileFilter(new FileNameExtensionFilter("Archivos xml", "xml"));
+
+            fcs.setMultiSelectionEnabled(false);
+            fcs.setDialogType(JFileChooser.SAVE_DIALOG);
+
+            //Si no se produce ningún error seleccion será 0
+            int seleccion = fcs.showSaveDialog(this);
+            if (seleccion == JFileChooser.APPROVE_OPTION) {
+                fichero = fcs.getSelectedFile();
+                String nombre = fichero.getName();
+                String extension = nombre.substring(nombre.lastIndexOf('.') + 1, nombre.length());
+
+                if (!extension.equalsIgnoreCase("xml")) {
+
+                    JOptionPane.showConfirmDialog(null, "Ha ocurrido un error.", "", JOptionPane.PLAIN_MESSAGE);
+
+                } else {
+                    return fichero;
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Fichero no guardado.");
+        }
+
+        return null;
+    }
+
 }
